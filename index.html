@@ -195,6 +195,32 @@ body {
     return images;
   };
 
+  const extraImages = [
+    "assets/WhatsApp Image 2026-02-06 at 17.23.43 (1).jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.43 (2).jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.43.jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.44 (1).jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.44 (2).jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.44 (3).jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.44 (4).jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.44.jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.45 (1).jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.45 (2).jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.45 (3).jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.45.jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.46 (1).jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.46 (2).jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.46 (3).jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.46.jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.47 (1).jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.47 (2).jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.47 (3).jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.47.jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.48 (1).jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.48 (2).jpeg",
+    "assets/WhatsApp Image 2026-02-06 at 17.23.48.jpeg"
+  ];
+
   const renderRow = (carousel, sources, startIndex) => {
     const fragment = document.createDocumentFragment();
     const doubled = sources.concat(sources);
@@ -210,7 +236,8 @@ body {
   };
 
   const initGallery = async () => {
-    const sources = await loadSequentialImages();
+    const sequential = await loadSequentialImages();
+    const sources = Array.from(new Set([...sequential, ...extraImages]));
     if (!sources.length) {
       return;
     }
