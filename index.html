@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+  background: radial-gradient(circle at top, #1a1a1a 0%, #0a0a0a 55%, #000 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: #f5f5f5;
+  overflow: hidden;
+}
+
+.carousel-container {
+  width: 100vw;
+  padding: 24px 0 32px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.memory-title {
+  text-align: center;
+  font-size: clamp(2rem, 3vw + 1rem, 3.5rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 0 6px;
+  color: #ffffff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75), 0 0 22px rgba(255, 255, 255, 0.35);
+}
+
+.memory-subtitle {
+  text-align: center;
+  margin: 0 0 18px;
+  font-size: clamp(0.9rem, 0.6vw + 0.6rem, 1.05rem);
+  color: rgba(255, 255, 255, 0.88);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.carousel-row {
+  width: 100vw;
+  overflow: hidden;
+  position: relative;
+  padding: 6px 0;
+  mask-image: linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
+}
+
+.carousel-row::before,
+.carousel-row::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 80px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.carousel-row::before {
+  left: 0;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.7), transparent);
+}
+
+.carousel-row::after {
+  right: 0;
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.7), transparent);
+}
+
+.carousel {
+  display: flex;
+  width: max-content;
+  gap: 14px;
+  animation: scroll-left 35s linear infinite;
+  will-change: transform;
+}
+
+.scroll-right {
+  animation-name: scroll-right;
+}
+
+.carousel img {
+  height: 220px;      /* Laptop-friendly default */
+  flex-shrink: 0;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+.carousel img:hover {
+  transform: translateY(-6px) scale(1.025);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.65);
+  filter: saturate(1.1);
+}
+
+@keyframes scroll-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes scroll-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Laptop-focused sizing */
+@media (min-width: 1024px) {
+  .carousel img {
+    height: 260px;
+  }
+}
+
+/* Smaller screens */
+@media (max-width: 768px) {
+  .carousel img {
+    height: 160px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div>
+  <h1 class="memory-title">Memory Wall</h1>
+  <p class="memory-subtitle">Captured moments</p>
+</div>
+
+<div class="carousel-container">
+  <div class="carousel-row">
+    <div class="carousel scroll-right" id="carousel-top">
+    </div>
+  </div>
+
+  <div class="carousel-row">
+    <div class="carousel scroll-left" id="carousel-middle">
+    </div>
+  </div>
+
+  <div class="carousel-row">
+    <div class="carousel scroll-right" id="carousel-bottom">
+    </div>
+  </div>
+</div>
+
+<script>
+  const carousels = [
+    document.getElementById("carousel-top"),
+    document.getElementById("carousel-middle"),
+    document.getElementById("carousel-bottom")
+  ];
+
+  const loadSequentialImages = async ({
+    prefix = "assets/",
+    extensions = ["jpg", "jpeg", "png"],
+    startIndex = 1,
+    maxFiles = 300
+  } = {}) => {
+    const images = [];
+
+    for (let i = startIndex; i <= maxFiles; i += 1) {
+      for (const extension of extensions) {
+        // eslint-disable-next-line no-await-in-loop
+        const result = await new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve({ ok: true, src: `${prefix}${i}.${extension}` });
+          img.onerror = () => resolve({ ok: false });
+          img.src = `${prefix}${i}.${extension}`;
+        });
+
+        if (result.ok) {
+          images.push(result.src);
+        }
+      }
+    }
+
+    return images;
+  };
+
+  const renderRow = (carousel, sources, startIndex) => {
+    const fragment = document.createDocumentFragment();
+    const doubled = sources.concat(sources);
+
+    doubled.forEach((src, index) => {
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = `Gallery image ${startIndex + index}`;
+      fragment.appendChild(img);
+    });
+
+    carousel.replaceChildren(fragment);
+  };
+
+  const initGallery = async () => {
+    const sources = await loadSequentialImages();
+    if (!sources.length) {
+      return;
+    }
+
+    const chunkSize = Math.ceil(sources.length / 3);
+    const rows = [
+      sources.slice(0, chunkSize),
+      sources.slice(chunkSize, chunkSize * 2),
+      sources.slice(chunkSize * 2)
+    ];
+
+    let offset = 1;
+    rows.forEach((rowSources, rowIndex) => {
+      if (!rowSources.length) {
+        return;
+      }
+
+      renderRow(carousels[rowIndex], rowSources, offset);
+      offset += rowSources.length;
+    });
+  };
+
+  initGallery();
+</script>
+
+</body>
+</html>
